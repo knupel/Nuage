@@ -14,10 +14,12 @@ Rope r;
 
 
 void setup() {
+
 	size(400,400,P2D);
 	r = new Rope();
 	State.init(this);
 	dropdown_setup("chaos", "walk", "circle");
+
 }
 
 void draw() {
@@ -40,13 +42,15 @@ void mouseWheel(MouseEvent e) {
 
 
 void nuage() {
-	int num = 60;
-	float step = 3;
+	int num = 1000;
+	int algo = get_algorithm();
+	float step = get_step();
 	vec2 pos = new vec2(width/2, height/2);
 	vec2 angle = new vec2(-PI,PI);
-	vec2 range = new vec2(0,width/8);
+	// vec2 angle = new vec2(0,PI);
+	vec2 range = new vec2(0,width/4);
 
-	R_Nuage nuage = new R_Nuage(angle,range,get_algorithm());
+	R_Nuage nuage = new R_Nuage(angle,range,algo);
 	nuage.pos(pos).set_step(step);
 	loadPixels();
 	for(int i = 0 ; i < num ; i++) {
@@ -71,10 +75,13 @@ public class R_Nuage extends Rope {
   private vec2 angle;
   private vec2 range;
   private int type = 0;
-  private float step = 1;
+  private float step = 1.0f;
+
+  // private int index = 0;
+  // private int num;
 
   private float dir = 0;
-  private float dist = 1;
+  private float dist = 1.0f;
 
   public R_Nuage(vec2 angle, vec2 range, int type) {
   	this.pos = new vec2(0);
@@ -84,6 +91,10 @@ public class R_Nuage extends Rope {
     set_type(type);
   }
 
+  private R_Nuage set_num(int num) {
+  	this.num = num;
+  }
+
   private void set_ref() {
   	if(this.ref == null) {
   		this.ref = this.pos.copy();
@@ -91,7 +102,6 @@ public class R_Nuage extends Rope {
   		this.ref.set(this.pos);
   	}
   }
-
 
   public R_Nuage set_type(int type) {
   	this.type = type;
@@ -112,7 +122,6 @@ public class R_Nuage extends Rope {
   	return this;
   }
 
-
 	public R_Nuage set_angle(float min, float max) {
   	this.angle.set(min,max);
   	return this;
@@ -129,7 +138,6 @@ public class R_Nuage extends Rope {
   public float get_dir() {
     return this.dir;
   }
-
 
   public float x() {
   	return pos.x();
@@ -168,14 +176,36 @@ public class R_Nuage extends Rope {
 
   	switch(this.type) {
   		case WALK:
-      pos.add(dx  * this.step, dy * this.step);
+      pos.add(dx * this.step, dy * this.step);
 			if(ref.dist(pos) > get_range().max()) {
       	pos.set(ref);
       }
       break;
 
+      case CIRCULAR:
+      // try to make a spiral...
+      if(get_step() > 1) {
+      	this.index++;
+      	float val = get_dist() / this.max;
+      }
+      pos.set(ref.x() + (dx *get_dist()), ref.y() + (dy * get_dist()));
+      break;
+
+			case CHAOS:
+			float ratio = 1;
+			float dist =  get_dist();
+			if(step > 1) {
+				float k = random(1);
+				k = pow(k,get_step());
+				dist *= k;
+			}
+
+			
+      pos.set(ref.x() + (dx * dist), ref.y() + (dy * dist));
+      break;
+
       default:
-      pos.set(ref.x() + (dx *get_dist()), ref.y() + (dy *get_dist()));
+      pos.set(ref.x() + (dx *get_dist()), ref.y() + (dy * get_dist()));
       break;
   	}
   }
@@ -206,8 +236,6 @@ public class R_Nuage extends Rope {
     }
     update_pos();
   }
-
-
 }
 
 

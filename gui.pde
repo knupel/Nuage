@@ -1,26 +1,52 @@
 
 import rope.gui.R_Dropdown;
 
-R_Dropdown menu;
+R_Dropdown algo;
+R_Dropdown step;
 
 void dropdown_setup(String... content) {
-	menu = new R_Dropdown();
-	menu.pos(5,5);
-	menu.set_content(content);
-	menu.set_label(content[0]);
+	algo = new R_Dropdown();
+	algo.pos(5,5);
+	algo.set_content(content);
+	algo.set_label(content[0]);
+	// step
+	step = new R_Dropdown();
+	step.pos(140,5);
+	step.set_content("1","2","3","4","5","10","15","20","30","40","50","100");
+	String str = "step" + step.get_content(0);
+	step.set_label(str);
 }
 
 void dropdown_update() {
-	menu.update();
-	menu.show_struc();
-	String str = menu.get_value();
-	menu.set_label(str);
+	algo.update();
+	algo.show_struc();
+	String str = algo.get_value();
+	algo.set_label(str);
+	// step
+	step.update();
+	step.show_struc();
+	str = "step " + step.get_value();
+	step.set_label(str);
+
+
 }
 
-int get_algorithm() {
-	if(menu.get_value().equals("walk")) return r.WALK;
-	if(menu.get_value().equals("circle")) return r.CIRCULAR;
-	if(menu.get_value().equals("chaos")) return r.CHAOS;
-	return -1;
 
+// get
+int get_algorithm() {
+	if(algo.get_value().equals("walk")) return r.WALK;
+	if(algo.get_value().equals("circle")) return r.CIRCULAR;
+	if(algo.get_value().equals("chaos")) return r.CHAOS;
+	return -1;
+}
+
+float get_step() {
+	if(str_is_numeric(step.get_value())) {
+		return Float.parseFloat(step.get_value());
+	}
+	return 1;
+}
+
+boolean str_is_numeric(String str) {
+	return str != null && str.matches("[0-9.]+");
 }
