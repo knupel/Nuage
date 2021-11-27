@@ -34,7 +34,8 @@ void dropdown_update() {
 
 // get
 int get_algorithm() {
-	if(algo.get_value().equals("walk")) return r.WALK;
+	if(algo.get_value().equals("crazy walk")) return r.MAD;
+	if(algo.get_value().equals("spiral")) return r.SPIRAL;
 	if(algo.get_value().equals("circle")) return r.CIRCULAR;
 	if(algo.get_value().equals("chaos")) return r.CHAOS;
 	return -1;

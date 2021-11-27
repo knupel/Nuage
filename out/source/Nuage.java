@@ -1,3 +1,25 @@
+import processing.core.*; 
+import processing.data.*; 
+import processing.event.*; 
+import processing.opengl.*; 
+
+import rope.R_State.State; 
+import rope.core.*; 
+import rope.vector.vec; 
+import rope.vector.vec2; 
+import rope.gui.R_Dropdown; 
+
+import java.util.HashMap; 
+import java.util.ArrayList; 
+import java.io.File; 
+import java.io.BufferedReader; 
+import java.io.PrintWriter; 
+import java.io.InputStream; 
+import java.io.OutputStream; 
+import java.io.IOException; 
+
+public class Nuage extends PApplet {
+
 /**
  * NUAGE 
  * v 0.0.1
@@ -6,23 +28,23 @@
  * Algorithm exploration to create a cloud pixel around a root point
  * 
  * */
-import rope.R_State.State;
-import rope.core.*;
-import rope.vector.vec;
-import rope.vector.vec2;
+
+
+
+
 Rope r;
 
 
-void setup() {
+public void setup() {
 
-	size(400,400,P2D);
+	
 	r = new Rope();
 	State.init(this);
 	dropdown_setup("chaos", "crazy walk", "circle", "spiral");
 
 }
 
-void draw() {
+public void draw() {
 	State.pointer(mouseX,mouseY);
   State.event(mousePressed);
 	
@@ -36,12 +58,12 @@ void draw() {
 	State.reset_event();
 }
 
-void mouseWheel(MouseEvent e) {
+public void mouseWheel(MouseEvent e) {
   State.scroll(e);
 }
 
 
-void nuage() {
+public void nuage() {
 	int num = 1000;
 	int algo = get_algorithm();
 	float step = get_step();
@@ -79,7 +101,6 @@ public class R_Nuage extends Rope {
   private float step = 1.0f;
   private int iter = 1;
   private int index = 0;
-  private float aperture = 0;
 
   // private int index = 0;
   // private int num;
@@ -90,7 +111,6 @@ public class R_Nuage extends Rope {
   public R_Nuage(vec2 angle, vec2 range, int type) {
   	this.pos = new vec2(0);
     this.angle = angle.copy();
-    this.aperture = abs(this.angle.min()) + abs(this.angle.max());
     this.range = range.copy();
 		set_ref();
     set_type(type);
@@ -208,10 +228,11 @@ public class R_Nuage extends Rope {
 
 
       case SPIRAL:
-      float seg_aperture = this.aperture / this.iter;
-      seg_aperture *= this.index;
-      dx = sin(seg_aperture);
-      dy = cos(seg_aperture);
+      float focus = abs(this.angle.min()) + abs(this.angle.max());
+      float seg_focus = focus / this.iter;
+      seg_focus *= this.index;
+      dx = sin(seg_focus);
+      dy = cos(seg_focus);
       float segment = (get_max() / this.iter) * this.step;
       segment *= this.index;
 
@@ -274,3 +295,66 @@ public class R_Nuage extends Rope {
 
 
 
+
+
+
+R_Dropdown algo;
+R_Dropdown step;
+
+public void dropdown_setup(String... content) {
+	algo = new R_Dropdown();
+	algo.pos(5,5);
+	algo.set_content(content);
+	algo.set_label(content[0]);
+	// step
+	step = new R_Dropdown();
+	step.pos(140,5);
+	step.set_content("1","2","3","4","5","10","15","20","30","40","50","100");
+	String str = "step" + step.get_content(0);
+	step.set_label(str);
+}
+
+public void dropdown_update() {
+	algo.update();
+	algo.show_struc();
+	String str = algo.get_value();
+	algo.set_label(str);
+	// step
+	step.update();
+	step.show_struc();
+	str = "step " + step.get_value();
+	step.set_label(str);
+
+
+}
+
+
+// get
+public int get_algorithm() {
+	if(algo.get_value().equals("crazy walk")) return r.MAD;
+	if(algo.get_value().equals("spiral")) return r.SPIRAL;
+	if(algo.get_value().equals("circle")) return r.CIRCULAR;
+	if(algo.get_value().equals("chaos")) return r.CHAOS;
+	return -1;
+}
+
+public float get_step() {
+	if(str_is_numeric(step.get_value())) {
+		return Float.parseFloat(step.get_value());
+	}
+	return 1;
+}
+
+public boolean str_is_numeric(String str) {
+	return str != null && str.matches("[0-9.]+");
+}
+  public void settings() { 	size(400,400,P2D); }
+  static public void main(String[] passedArgs) {
+    String[] appletArgs = new String[] { "Nuage" };
+    if (passedArgs != null) {
+      PApplet.main(concat(appletArgs, passedArgs));
+    } else {
+      PApplet.main(appletArgs);
+    }
+  }
+}
