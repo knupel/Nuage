@@ -95,26 +95,35 @@ public class R_Nuage extends Rope {
 	// private float ref_y;
 	private vec2 ref;
 	private vec2 pos;
+
   private vec2 angle;
+  private float aperture = 0;
+  private float dir = 0;
+
   private vec2 range;
+  private float dist = 1.0f;
+
   private int type = 0;
   private float step = 1.0f;
   private int iter = 1;
   private int index = 0;
 
+  // private float seg_aperture = 0;
+
   // private int index = 0;
   // private int num;
 
-  private float dir = 0;
-  private float dist = 1.0f;
 
   public R_Nuage(vec2 angle, vec2 range, int type) {
   	this.pos = new vec2(0);
     this.angle = angle.copy();
+    this.aperture = calc_aperture(this.angle.x(),this.angle.y());
     this.range = range.copy();
 		set_ref();
     set_type(type);
   }
+
+
 
   public R_Nuage set_iter(int iter) {
   	this.iter = iter;
@@ -149,35 +158,63 @@ public class R_Nuage extends Rope {
   	return this.step;
   }
 
-	public R_Nuage set_range(float min, float max) {
-  	this.range.set(min,max);
+
+  // angle
+	public R_Nuage set_angle(float min, float max) {
+  	this.angle.set(min,max);
+    this.aperture = calc_aperture(min,max);
   	return this;
   }
 
-	public R_Nuage set_angle(float min, float max) {
-  	this.angle.set(min,max);
+  public float get_dir() {
+    return this.dir;
+  }
+
+  public float get_aperture() {
+    return this.aperture;
+  }
+
+  private float calc_aperture(float min, float max) {
+    if(max <= min) {
+      print_err("WARNING: calc_aperture(",min,max,") float calc_aperture( float min, float max) 'min' must be < to 'max'");
+      exit();
+    }
+    if(min < 0 && max >= 0) {
+      return abs(min) + abs(max);
+    }
+
+    if(min < 0 && max < 0) {
+      return abs(min) - abs(max);
+    }
+    return max - min;
+  }
+
+
+
+	
+  // range and dist
+  public R_Nuage set_range(float min, float max) {
+  	this.range.set(min,max);
   	return this;
   }
 
   public float get_dist() {
     return this.dist;
   }
-	
+
 	public vec2 get_range() {
     return this.range;
   }
 
-  public float get_min() {
+  public float get_dist_min() {
     return this.range.min();
   }
 
-  public float get_max() {
+  public float get_dist_max() {
     return this.range.max();
   }
 
-  public float get_dir() {
-    return this.dir;
-  }
+
 
   public float x() {
   	return pos.x();
@@ -211,13 +248,12 @@ public class R_Nuage extends Rope {
   private void update_pos() {
 		float dx = sin(get_dir());
 		float dy = cos(get_dir());
-		// print_err(dx, dy);
 
 
   	switch(this.type) {
   		case MAD:
       pos.add(dx * this.step, dy * this.step);
-			if(ref.dist(pos) > get_max()) {
+			if(ref.dist(pos) > get_dist_max()) {
       	pos.set(ref);
       }
       break;
@@ -228,12 +264,12 @@ public class R_Nuage extends Rope {
 
 
       case SPIRAL:
-      float focus = abs(this.angle.min()) + abs(this.angle.max());
-      float seg_focus = focus / this.iter;
-      seg_focus *= this.index;
-      dx = sin(seg_focus);
-      dy = cos(seg_focus);
-      float segment = (get_max() / this.iter) * this.step;
+      float seg_aperture = this.aperture / this.iter;
+      seg_aperture *= (this.index * this.step);
+      dx = sin(seg_aperture);
+      dy = cos(seg_aperture);
+      float buf_dist = get_dist_max();
+      float segment = (buf_dist / this.iter);
       segment *= this.index;
 
       pos.set(ref.x() + (dx * segment), ref.y() + (dy * segment));
@@ -263,27 +299,27 @@ public class R_Nuage extends Rope {
     this.dir = random(angle.min(),angle.max());
     switch(this.type) {
       case CIRCULAR:
-      this.dist = get_max();
+      this.dist = get_dist_max();
       break;
 
 			case MAD:
-      this.dist = random(get_min(), get_max());
+      this.dist = random(get_dist_min(), get_dist_max());
       break;
 
       case SPIRAL:
-      this.dist = random(get_min(), get_max());
+      this.dist = random(get_dist_min(), get_dist_max());
       break;
 
       case CHAOS:
-      this.dist = random(get_min(), get_max());
+      this.dist = random(get_dist_min(), get_dist_max());
       break;
 
       case IMAGE:
-      this.dist = random(get_min(), get_max());
+      this.dist = random(get_dist_min(), get_dist_max());
       break;
 
       default:
-      this.dist = random(get_min(), get_max());
+      this.dist = random(get_dist_min(), get_dist_max());
       break;
     }
     update_pos();
