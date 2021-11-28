@@ -42,7 +42,7 @@ void mouseWheel(MouseEvent e) {
 
 
 void nuage() {
-	int num = 1000;
+	int num = get_num();
 	int algo = get_algorithm();
 	float step = get_step();
 	vec2 pos = new vec2(width/2, height/2);
@@ -242,13 +242,15 @@ public class R_Nuage extends Rope {
 
 
       case SPIRAL:
-      float seg_aperture = this.aperture / this.iter;
+      float variance = random(this.iter/this.step, this.iter);
+      float seg_aperture = this.aperture / variance;
       seg_aperture *= (this.index * this.step);
       dx = sin(seg_aperture);
       dy = cos(seg_aperture);
       float buf_dist = get_dist_max();
-      float segment = (buf_dist / this.iter);
+      float segment = buf_dist / variance;
       segment *= this.index;
+      segment /= this.step;
 
       pos.set(ref.x() + (dx * segment), ref.y() + (dy * segment));
       break;
