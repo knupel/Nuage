@@ -50,6 +50,7 @@ int get_algorithm() {
 	if(algo.get_value().equals("spiral")) return r.SPIRAL;
 	if(algo.get_value().equals("circle")) return r.CIRCULAR;
 	if(algo.get_value().equals("chaos")) return r.CHAOS;
+	if(algo.get_value().equals("line")) return r.LINE;
 	return -1;
 }
 

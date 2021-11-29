@@ -18,7 +18,7 @@ void setup() {
 	size(400,400,P2D);
 	r = new Rope();
 	State.init(this);
-	dropdown_setup("chaos", "crazy walk", "circle", "spiral");
+	dropdown_setup("chaos", "crazy walk", "circle", "spiral", "line");
 
 }
 
@@ -71,11 +71,12 @@ void nuage() {
 public class R_Nuage extends Rope {
 	// private float ref_x;
 	// private float ref_y;
-	private vec2 ref;
+	private vec2 ref_pos;
 	private vec2 pos;
 
   private vec2 angle;
   private float aperture = 0;
+  private float bissector = 0;
   private float dir = 0;
 
   private vec2 range;
@@ -115,11 +116,12 @@ public class R_Nuage extends Rope {
 
 
   private void set_ref() {
-  	if(this.ref == null) {
-  		this.ref = this.pos.copy();
+  	if(this.ref_pos == null) {
+  		this.ref_pos = this.pos.copy();
   	} else {
-  		this.ref.set(this.pos);
+  		this.ref_pos.set(this.pos);
   	}
+    float bissector = (this.angle.x() + this.angle.y()) * 0.5;
   }
 
   public R_Nuage set_type(int type) {
@@ -146,6 +148,10 @@ public class R_Nuage extends Rope {
 
   public float get_dir() {
     return this.dir;
+  }
+
+  public float get_bissector() {
+    return this.bissector;
   }
 
   public float get_aperture() {
@@ -226,18 +232,32 @@ public class R_Nuage extends Rope {
   private void update_pos() {
 		float dx = sin(get_dir());
 		float dy = cos(get_dir());
+    float ratio = 1;
+    float dist =  get_dist();
 
 
   	switch(this.type) {
   		case MAD:
       pos.add(dx * this.step, dy * this.step);
-			if(ref.dist(pos) > get_dist_max()) {
-      	pos.set(ref);
+			if(ref_pos.dist(pos) > get_dist_max()) {
+      	pos.set(ref_pos);
       }
       break;
 
       case CIRCULAR:
-      pos.set(ref.x() + (dx *get_dist()), ref.y() + (dy * get_dist()));
+      pos.set(ref_pos.x() + (dx * dist), ref_pos.y() + (dy * dist));
+      break;
+
+      case LINE:
+
+      dx = sin(get_bissector());
+      dy = cos(get_bissector());
+			if(step > 1) {
+				float k = random(1);
+				k = pow(k,get_step());
+				dist *= k;
+			}
+      pos.set(ref_pos.x() + (dx * dist), ref_pos.y() + (dy * dist));
       break;
 
 
@@ -252,12 +272,10 @@ public class R_Nuage extends Rope {
       segment *= this.index;
       segment /= this.step;
 
-      pos.set(ref.x() + (dx * segment), ref.y() + (dy * segment));
+      pos.set(ref_pos.x() + (dx * segment), ref_pos.y() + (dy * segment));
       break;
 
 			case CHAOS:
-			float ratio = 1;
-			float dist =  get_dist();
 			if(step > 1) {
 				float k = random(1);
 				k = pow(k,get_step());
@@ -265,11 +283,11 @@ public class R_Nuage extends Rope {
 			}
 
 			
-      pos.set(ref.x() + (dx * dist), ref.y() + (dy * dist));
+      pos.set(ref_pos.x() + (dx * dist), ref_pos.y() + (dy * dist));
       break;
 
       default:
-      pos.set(ref.x() + (dx *get_dist()), ref.y() + (dy * get_dist()));
+      pos.set(ref_pos.x() + (dx * dist), ref_pos.y() + (dy * dist));
       break;
   	}
   }
