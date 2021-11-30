@@ -141,7 +141,6 @@ public class R_Nuage extends Rope {
     return this.focus;
   }
 
-
   public R_Nuage set_focus(float angle, float dist) {
     set_focus_angle(angle);
     set_focus_dist(dist);
@@ -196,6 +195,10 @@ public class R_Nuage extends Rope {
     return this.fov;
   }
 
+  public float get_angle() {
+    return this.focus.get_angle();
+  }
+
   public float get_bissector() {
     return this.bissector;
   }
@@ -226,9 +229,9 @@ public class R_Nuage extends Rope {
   	return this;
   }
 
-  // public float get_dist() {
-  //   return this.dist;
-  // }
+  public float get_dist() {
+    return this.focus.get_dist();
+  }
 
 	public vec2 get_range_dist() {
     return this.range_dist;
@@ -289,7 +292,9 @@ public class R_Nuage extends Rope {
       break;
 
       case CIRCULAR:
-      dist = get_dist_max();
+      float seg_dist = get_dist() / this.step;
+      ratio = ceil(random(this.step));
+      dist = seg_dist * ratio;
       pos.set(ref_pos.x() + (dx * dist), ref_pos.y() + (dy * dist));
       break;
 
