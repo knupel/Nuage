@@ -65,20 +65,24 @@ void nuage() {
 
 
 /**
-* v 0.0.2
+* v 0.1.0
 */
 
 public class R_Nuage extends Rope {
 	private vec2 ref_pos;
 	private vec2 pos;
 
-  private vec2 angle;
+  // private float focus = 0;
+  private R_Focus focus;
+
+  private vec2 range_angle;
   private float fov = 0;
   private float bissector = 0;
-  private float focus = 0;
 
-  private vec2 range;
-  private float dist = 1.0f;
+  private vec2 range_dist;
+  // private float dist = 1.0f;
+
+  // private R_Focus focus;
 
   private int type = 0;
   private float step = 1.0f;
@@ -86,11 +90,12 @@ public class R_Nuage extends Rope {
   private int index = 0;
 
 
-  public R_Nuage(vec2 range, int type) {
+  public R_Nuage(vec2 range_dist, int type) {
+    focus = new R_Focus();
   	this.pos = new vec2(0);
-    this.angle = new vec2(-PI, PI);
-    this.fov = calc_fov(this.angle.x(),this.angle.y());
-    this.range = range.copy();
+    this.range_angle = new vec2(-PI, PI);
+    this.fov = calc_fov(this.range_angle.x(),this.range_angle.y());
+    this.range_dist = range_dist.copy();
 		set_ref();
     set_type(type);
   }
@@ -114,7 +119,7 @@ public class R_Nuage extends Rope {
   	} else {
   		this.ref_pos.set(this.pos);
   	}
-    float bissector = (this.angle.x() + this.angle.y()) * 0.5;
+    float bissector = (this.range_angle.x() + this.range_angle.y()) * 0.5;
   }
 
   public R_Nuage set_type(int type) {
@@ -131,38 +136,64 @@ public class R_Nuage extends Rope {
   	return this.step;
   }
 
-
-  // angle
-	public R_Nuage set_fov(float min, float max) {
-  	this.angle.set(min,max);
-    this.fov = calc_fov(min,max);
-  	return this;
+  // focus
+  public R_Focus get_focus() {
+    return this.focus;
   }
 
-  public R_Nuage set_focus(float angle) {
+
+  public R_Nuage set_focus(float angle, float dist) {
+    set_focus_angle(angle);
+    set_focus_dist(dist);
+    return this;
+  }
+
+  public R_Nuage set_focus_angle(float angle) {
+     boolean is = false;
     if(angle >= get_start_fov() && angle <= get_stop_fov()) {
-      this.focus = angle;
+      is = true;
+    }
+    if(is) {
+      this.focus.set_angle(angle);
       return this;
     }
-    print_err("public R_Nuage set_focus(float angle)", angle, "is out of the range fov", get_start_fov(), get_stop_fov());
+    print_err("public R_Nuage set_focus_angle(float angle)", angle, "is out of the range fov", get_start_fov(), get_stop_fov());
     exit();
     return this;
   }
 
+  public R_Nuage set_focus_dist(float dist) {
+     boolean is = false;
+    if(dist >= get_dist_min() && dist <= get_dist_max()) {
+      is = true;
+    }
+    if(is) {
+      this.focus.set_dist(dist);
+      return this;
+    }
+    print_err("public R_Nuage set_focus_dist(float dist)", dist, "is out of the range fov", get_dist_min(), get_dist_max());
+    exit();
+    return this;
+  }
+
+
+  // angle
+	public R_Nuage set_fov(float min, float max) {
+  	this.range_angle.set(min,max);
+    this.fov = calc_fov(min,max);
+  	return this;
+  }
+
   public float get_start_fov() {
-    return this.angle.x();
+    return this.range_angle.x();
   }
 
   public float get_stop_fov() {
-    return this.angle.y();
+    return this.range_angle.y();
   }
 
   public float get_fov() {
     return this.fov;
-  }
-
-  public float get_focus() {
-    return this.focus;
   }
 
   public float get_bissector() {
@@ -190,25 +221,25 @@ public class R_Nuage extends Rope {
 
 	
   // range and dist
-  public R_Nuage set_range(float min, float max) {
-  	this.range.set(min,max);
+  public R_Nuage set_range_dist(float min, float max) {
+  	this.range_dist.set(min,max);
   	return this;
   }
 
-  public float get_dist() {
-    return this.dist;
-  }
+  // public float get_dist() {
+  //   return this.dist;
+  // }
 
-	public vec2 get_range() {
-    return this.range;
+	public vec2 get_range_dist() {
+    return this.range_dist;
   }
 
   public float get_dist_min() {
-    return this.range.min();
+    return this.range_dist.x();
   }
 
   public float get_dist_max() {
-    return this.range.max();
+    return this.range_dist.y();
   }
 
 
@@ -243,10 +274,10 @@ public class R_Nuage extends Rope {
 
   // UPDATE
   private void update_pos() {
-		float dx = sin(get_focus());
-		float dy = cos(get_focus());
+		float dx = sin(get_focus().get_angle());
+		float dy = cos(get_focus().get_angle());
     float ratio = 1;
-    float dist = 1;
+    float dist = dist_impl();
 
 
   	switch(this.type) {
@@ -258,13 +289,13 @@ public class R_Nuage extends Rope {
       break;
 
       case CIRCULAR:
+      dist = get_dist_max();
       pos.set(ref_pos.x() + (dx * dist), ref_pos.y() + (dy * dist));
       break;
 
       case LINE:
       dx = sin(get_bissector());
       dy = cos(get_bissector());
-      dist = dist_impl();
       pos.set(ref_pos.x() + (dx * dist), ref_pos.y() + (dy * dist));
       break;
 
@@ -284,7 +315,6 @@ public class R_Nuage extends Rope {
       break;
 
 			case CHAOS:
-      dist = dist_impl();
       pos.set(ref_pos.x() + (dx * dist), ref_pos.y() + (dy * dist));
       break;
 
@@ -295,7 +325,7 @@ public class R_Nuage extends Rope {
   }
 
   private float dist_impl() {
-    float dist =  get_dist();
+    float dist = this.focus.get_dist();
     if(step > 1) {
       float k = random(1);
       k = pow(k,get_step());
@@ -306,33 +336,67 @@ public class R_Nuage extends Rope {
 
 
   public void update() {
-    set_focus(get_start_fov(),get_stop_fov());
+    float angle = random(get_start_fov(),get_stop_fov());
+    float dist = 1;
     switch(this.type) {
       case CIRCULAR:
-      this.dist = get_dist_max();
+      dist = get_dist_max();
       break;
 
 			case MAD:
-      this.dist = random(get_dist_min(), get_dist_max());
+      dist = random(get_dist_min(), get_dist_max());
       break;
 
       case SPIRAL:
-      this.dist = random(get_dist_min(), get_dist_max());
+      dist = random(get_dist_min(), get_dist_max());
       break;
 
       case CHAOS:
-      this.dist = random(get_dist_min(), get_dist_max());
+      dist = random(get_dist_min(), get_dist_max());
       break;
 
       case IMAGE:
-      this.dist = random(get_dist_min(), get_dist_max());
+      dist = random(get_dist_min(), get_dist_max());
       break;
 
       default:
-      this.dist = random(get_dist_min(), get_dist_max());
+      dist = random(get_dist_min(), get_dist_max());
       break;
     }
+    set_focus(angle, dist);
     update_pos();
+  }
+}
+
+
+/**
+* FOCUS
+*/
+public class R_Focus {
+  private float angle = 0;
+  private float distance = 1;
+
+  public R_Focus() {}
+
+  public R_Focus(float angle, float distance) {
+    set_dist(distance);
+    set_angle(angle);
+  }
+
+  public void set_dist(float distance) {
+    this.distance = distance;
+  }
+
+  public float get_dist() {
+    return this.distance;
+  }
+
+  public void set_angle(float angle) {
+    this.angle = angle;
+  }
+
+  public float get_angle() {
+    return this.angle;
   }
 }
 
