@@ -46,12 +46,12 @@ void nuage() {
 	int algo = get_algorithm();
 	float step = get_step();
 	vec2 pos = new vec2(width/2, height/2);
-	vec2 angle = new vec2(-PI,PI);
+	// vec2 angle = new vec2(-PI,PI);
 	// vec2 angle = new vec2(0,PI);
 	vec2 range = new vec2(0,width/4);
 
-	R_Nuage nuage = new R_Nuage(angle,range,algo);
-	nuage.pos(pos).set_step(step).set_iter(num);
+	R_Nuage nuage = new R_Nuage(range,algo);
+	nuage.pos(pos).set_fov(-PI,PI).set_step(step).set_iter(num);
 	loadPixels();
 	for(int i = 0 ; i < num ; i++) {
     nuage.set_index(i);
@@ -69,15 +69,13 @@ void nuage() {
 */
 
 public class R_Nuage extends Rope {
-	// private float ref_x;
-	// private float ref_y;
 	private vec2 ref_pos;
 	private vec2 pos;
 
   private vec2 angle;
-  private float aperture = 0;
+  private float fov = 0;
   private float bissector = 0;
-  private float dir = 0;
+  private float focus = 0;
 
   private vec2 range;
   private float dist = 1.0f;
@@ -87,16 +85,11 @@ public class R_Nuage extends Rope {
   private int iter = 1;
   private int index = 0;
 
-  // private float seg_aperture = 0;
 
-  // private int index = 0;
-  // private int num;
-
-
-  public R_Nuage(vec2 angle, vec2 range, int type) {
+  public R_Nuage(vec2 range, int type) {
   	this.pos = new vec2(0);
-    this.angle = angle.copy();
-    this.aperture = calc_aperture(this.angle.x(),this.angle.y());
+    this.angle = new vec2(-PI, PI);
+    this.fov = calc_fov(this.angle.x(),this.angle.y());
     this.range = range.copy();
 		set_ref();
     set_type(type);
@@ -140,27 +133,47 @@ public class R_Nuage extends Rope {
 
 
   // angle
-	public R_Nuage set_angle(float min, float max) {
+	public R_Nuage set_fov(float min, float max) {
   	this.angle.set(min,max);
-    this.aperture = calc_aperture(min,max);
+    this.fov = calc_fov(min,max);
   	return this;
   }
 
-  public float get_dir() {
-    return this.dir;
+  public R_Nuage set_focus(float angle) {
+    if(angle >= get_start_fov() && angle <= get_stop_fov()) {
+      this.focus = angle;
+      return this;
+    }
+    print_err("public R_Nuage set_focus(float angle)", angle, "is out of the range fov", get_start_fov(), get_stop_fov());
+    exit();
+    return this;
+  }
+
+  public float get_start_fov() {
+    return this.angle.x();
+  }
+
+  public float get_stop_fov() {
+    return this.angle.y();
+  }
+
+  public float get_fov() {
+    return this.fov;
+  }
+
+  public float get_focus() {
+    return this.focus;
   }
 
   public float get_bissector() {
     return this.bissector;
   }
 
-  public float get_aperture() {
-    return this.aperture;
-  }
 
-  private float calc_aperture(float min, float max) {
+
+  private float calc_fov(float min, float max) {
     if(max <= min) {
-      print_err("WARNING: calc_aperture(",min,max,") float calc_aperture( float min, float max) 'min' must be < to 'max'");
+      print_err("WARNING: calc_fov(",min,max,") float calc_fov( float min, float max) 'min' must be < to 'max'");
       exit();
     }
     if(min < 0 && max >= 0) {
@@ -230,10 +243,10 @@ public class R_Nuage extends Rope {
 
   // UPDATE
   private void update_pos() {
-		float dx = sin(get_dir());
-		float dy = cos(get_dir());
+		float dx = sin(get_focus());
+		float dy = cos(get_focus());
     float ratio = 1;
-    float dist =  get_dist();
+    float dist = 1;
 
 
   	switch(this.type) {
@@ -249,24 +262,19 @@ public class R_Nuage extends Rope {
       break;
 
       case LINE:
-
       dx = sin(get_bissector());
       dy = cos(get_bissector());
-			if(step > 1) {
-				float k = random(1);
-				k = pow(k,get_step());
-				dist *= k;
-			}
+      dist = dist_impl();
       pos.set(ref_pos.x() + (dx * dist), ref_pos.y() + (dy * dist));
       break;
 
 
       case SPIRAL:
       float variance = random(this.iter/this.step, this.iter);
-      float seg_aperture = this.aperture / variance;
-      seg_aperture *= (this.index * this.step);
-      dx = sin(seg_aperture);
-      dy = cos(seg_aperture);
+      float segment_fov = this.fov / variance;
+      segment_fov *= (this.index * this.step);
+      dx = sin(segment_fov);
+      dy = cos(segment_fov);
       float buf_dist = get_dist_max();
       float segment = buf_dist / variance;
       segment *= this.index;
@@ -276,13 +284,7 @@ public class R_Nuage extends Rope {
       break;
 
 			case CHAOS:
-			if(step > 1) {
-				float k = random(1);
-				k = pow(k,get_step());
-				dist *= k;
-			}
-
-			
+      dist = dist_impl();
       pos.set(ref_pos.x() + (dx * dist), ref_pos.y() + (dy * dist));
       break;
 
@@ -292,9 +294,19 @@ public class R_Nuage extends Rope {
   	}
   }
 
+  private float dist_impl() {
+    float dist =  get_dist();
+    if(step > 1) {
+      float k = random(1);
+      k = pow(k,get_step());
+      dist *= k;
+    }
+    return dist;
+  }
+
 
   public void update() {
-    this.dir = random(angle.min(),angle.max());
+    set_focus(get_start_fov(),get_stop_fov());
     switch(this.type) {
       case CIRCULAR:
       this.dist = get_dist_max();
