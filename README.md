@@ -1,2 +1,2 @@
 # Nuage
- Work to create a familly algorithm to distribute pixels around a root point.
+ Work to create a family of algorithms to allocate pixels from an origin point.
