@@ -1,6 +1,6 @@
 /**
  * NUAGE 
- * v 0.0.1
+ * v 0.1.0
  * 2021-2021
  * 
  * Algorithm exploration to create a cloud pixel around a root point
@@ -72,7 +72,6 @@ public class R_Nuage extends Rope {
 	private vec2 ref_pos;
 	private vec2 pos;
 
-  // private float focus = 0;
   private R_Focus focus;
 
   private vec2 range_angle;
@@ -80,11 +79,9 @@ public class R_Nuage extends Rope {
   private float bissector = 0;
 
   private vec2 range_dist;
-  // private float dist = 1.0f;
-
-  // private R_Focus focus;
 
   private int type = 0;
+
   private float step = 1.0f;
   private int iter = 1;
   private int index = 0;
@@ -101,7 +98,7 @@ public class R_Nuage extends Rope {
   }
 
 
-
+  // iteration & index
   public R_Nuage set_iter(int iter) {
   	this.iter = iter;
     return this;
@@ -112,7 +109,7 @@ public class R_Nuage extends Rope {
     return this;
   }
 
-
+  // reference
   private void set_ref() {
   	if(this.ref_pos == null) {
   		this.ref_pos = this.pos.copy();
@@ -122,11 +119,13 @@ public class R_Nuage extends Rope {
     float bissector = (this.range_angle.x() + this.range_angle.y()) * 0.5;
   }
 
+  // type
   public R_Nuage set_type(int type) {
   	this.type = type;
   	return this;
   }
 
+  // step
   public R_Nuage set_step(float step) {
   	this.step = step;
   	return this;
@@ -203,8 +202,6 @@ public class R_Nuage extends Rope {
     return this.bissector;
   }
 
-
-
   private float calc_fov(float min, float max) {
     if(max <= min) {
       print_err("WARNING: calc_fov(",min,max,") float calc_fov( float min, float max) 'min' must be < to 'max'");
@@ -220,10 +217,7 @@ public class R_Nuage extends Rope {
     return max - min;
   }
 
-
-
-	
-  // range and dist
+  // range & dist
   public R_Nuage set_range_dist(float min, float max) {
   	this.range_dist.set(min,max);
   	return this;
@@ -246,7 +240,7 @@ public class R_Nuage extends Rope {
   }
 
 
-
+  // pos
   public float x() {
   	return pos.x();
   }
@@ -279,9 +273,8 @@ public class R_Nuage extends Rope {
   private void update_pos() {
 		float dx = sin(get_focus().get_angle());
 		float dy = cos(get_focus().get_angle());
-    float ratio = 1;
+    float ratio = ceil(random(this.step));;
     float dist = dist_impl();
-
 
   	switch(this.type) {
   		case MAD:
@@ -293,14 +286,19 @@ public class R_Nuage extends Rope {
 
       case CIRCULAR:
       float seg_dist = get_dist() / this.step;
-      ratio = ceil(random(this.step));
       dist = seg_dist * ratio;
       pos.set(ref_pos.x() + (dx * dist), ref_pos.y() + (dy * dist));
       break;
 
       case LINE:
-      dx = sin(get_bissector());
-      dy = cos(get_bissector());
+      float ang = get_bissector();
+      if(this.step > 1) {
+        float seg_fov = get_fov() / this.step;
+        seg_fov *= ratio;
+        ang += seg_fov;
+      }
+      dx = sin(ang);
+      dy = cos(ang);
       pos.set(ref_pos.x() + (dx * dist), ref_pos.y() + (dy * dist));
       break;
 
@@ -315,7 +313,6 @@ public class R_Nuage extends Rope {
       float segment = buf_dist / variance;
       segment *= this.index;
       segment /= this.step;
-
       pos.set(ref_pos.x() + (dx * segment), ref_pos.y() + (dy * segment));
       break;
 
@@ -329,18 +326,7 @@ public class R_Nuage extends Rope {
   	}
   }
 
-  private float dist_impl() {
-    float dist = this.focus.get_dist();
-    if(step > 1) {
-      float k = random(1);
-      k = pow(k,get_step());
-      dist *= k;
-    }
-    return dist;
-  }
-
-
-  public void update() {
+  private void update_focus() {
     float angle = random(get_start_fov(),get_stop_fov());
     float dist = 1;
     switch(this.type) {
@@ -369,7 +355,21 @@ public class R_Nuage extends Rope {
       break;
     }
     set_focus(angle, dist);
+  }
+
+  public void update() {
+    update_focus();  
     update_pos();
+  }
+
+  private float dist_impl() {
+    float dist = this.focus.get_dist();
+    if(step > 1) {
+      float k = random(1);
+      k = pow(k,get_step());
+      dist *= k;
+    }
+    return dist;
   }
 }
 
