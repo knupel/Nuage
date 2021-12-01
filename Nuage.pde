@@ -10,6 +10,7 @@ import rope.R_State.State;
 import rope.core.*;
 import rope.vector.vec;
 import rope.vector.vec2;
+import rope.vector.ivec2;
 Rope r;
 
 
@@ -52,12 +53,22 @@ void nuage() {
 
 	R_Nuage nuage = new R_Nuage(range,algo);
 	nuage.pos(pos).set_fov(-PI,PI).set_step(step).set_iter(num);
+  nuage.set_grid(4,4);
+  if(keyPressed) {
+    nuage.use_grid(false);
+  } else {
+    nuage.use_grid(true);
+  }
 	loadPixels();
 	for(int i = 0 ; i < num ; i++) {
     nuage.set_index(i);
 		nuage.update();
+
 		// pixels[nuage.get_pixel_index(g)] = r.BLANC;
-		set((int)nuage.x(),(int)nuage.y(),r.BLANC);
+    if(nuage.pixel_is()) {
+      set((int)nuage.x(),(int)nuage.y(),r.BLANC);
+    }
+		
 	}
 	updatePixels();
 }
@@ -65,7 +76,7 @@ void nuage() {
 
 
 /**
-* v 0.1.0
+* v 0.1.1
 */
 
 public class R_Nuage extends Rope {
@@ -86,9 +97,13 @@ public class R_Nuage extends Rope {
   private int iter = 1;
   private int index = 0;
 
+  private ivec2 grid;
+  private boolean pixel_is = true;
+  private boolean use_grid_is = false;
+
 
   public R_Nuage(vec2 range_dist, int type) {
-    focus = new R_Focus();
+    this.focus = new R_Focus();
   	this.pos = new vec2(0);
     this.range_angle = new vec2(-PI, PI);
     this.fov = calc_fov(this.range_angle.x(),this.range_angle.y());
@@ -267,10 +282,59 @@ public class R_Nuage extends Rope {
   	return this.index_pixel_array((int)x(),(int)y(),pg.width);
   }
 
+  // grid and pixel is
+  public R_Nuage set_grid(int x, int y) {
+    if(this.grid == null) {
+      this.grid = new ivec2(x,y);
+    } else {
+      this.grid.set(x,y);
+    }
+    return this;
+  }
+
+  public void use_grid(boolean is) {
+    this.use_grid_is = is;
+  }
+
+  public boolean pixel_is() {
+    return this.pixel_is;
+  }
+
 
 
   // UPDATE
-  private void update_pos() {
+  private void update_focus() {
+    float angle = random(get_start_fov(),get_stop_fov());
+    float dist = 1;
+    switch(this.type) {
+      case CIRCULAR:
+      dist = get_dist_max();
+      break;
+
+			case MAD:
+      dist = random(get_dist_min(), get_dist_max());
+      break;
+
+      case SPIRAL:
+      dist = random(get_dist_min(), get_dist_max());
+      break;
+
+      case CHAOS:
+      dist = random(get_dist_min(), get_dist_max());
+      break;
+
+      case IMAGE:
+      dist = random(get_dist_min(), get_dist_max());
+      break;
+
+      default:
+      dist = random(get_dist_min(), get_dist_max());
+      break;
+    }
+    set_focus(angle, dist);
+  }
+
+  private void update_pattern() {
 		float dx = sin(get_focus().get_angle());
 		float dy = cos(get_focus().get_angle());
     float ratio = ceil(random(this.step));;
@@ -326,40 +390,23 @@ public class R_Nuage extends Rope {
   	}
   }
 
-  private void update_focus() {
-    float angle = random(get_start_fov(),get_stop_fov());
-    float dist = 1;
-    switch(this.type) {
-      case CIRCULAR:
-      dist = get_dist_max();
-      break;
-
-			case MAD:
-      dist = random(get_dist_min(), get_dist_max());
-      break;
-
-      case SPIRAL:
-      dist = random(get_dist_min(), get_dist_max());
-      break;
-
-      case CHAOS:
-      dist = random(get_dist_min(), get_dist_max());
-      break;
-
-      case IMAGE:
-      dist = random(get_dist_min(), get_dist_max());
-      break;
-
-      default:
-      dist = random(get_dist_min(), get_dist_max());
-      break;
+  public void update_grid() {
+    int x = (int)x();
+    int y = (int)y();
+    if(x%this.grid.x() == 0 && y%this.grid.y() == 0) {
+      pixel_is = true;
+    } else {
+      pixel_is = false;
+      pos.set(-1);
     }
-    set_focus(angle, dist);
   }
 
   public void update() {
     update_focus();  
-    update_pos();
+    update_pattern();
+    if(use_grid_is) {
+      update_grid(); 
+    }
   }
 
   private float dist_impl() {
