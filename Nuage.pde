@@ -16,7 +16,7 @@ Rope r;
 
 void setup() {
 
-	size(400,400,P2D);
+	size(600,400,P2D);
 	r = new Rope();
 	State.init(this);
 	dropdown_setup("chaos", "crazy walk", "circle", "spiral", "line");
@@ -53,22 +53,14 @@ void nuage() {
 
 	R_Nuage nuage = new R_Nuage(range,algo);
 	nuage.pos(pos).set_fov(-PI,PI).set_step(step).set_iter(num);
-  nuage.set_grid(4,4);
-  if(keyPressed) {
-    nuage.use_grid(false);
-  } else {
-    nuage.use_grid(true);
-  }
+  nuage.set_grid(get_grid()).use_grid(true);
 	loadPixels();
 	for(int i = 0 ; i < num ; i++) {
     nuage.set_index(i);
 		nuage.update();
-
-		// pixels[nuage.get_pixel_index(g)] = r.BLANC;
     if(nuage.pixel_is()) {
       set((int)nuage.x(),(int)nuage.y(),r.BLANC);
     }
-		
 	}
 	updatePixels();
 }
@@ -268,21 +260,25 @@ public class R_Nuage extends Rope {
   	return pos;
   }
 
+  // set pos
   public R_Nuage pos(vec pos) {
   	this.pos(pos.x(),pos.y());
-  	set_ref();
   	return this;
   }
 
 	public R_Nuage pos(float x, float y) {
-  	this.pos.set(x,y);return this;
+  	this.pos.set(x,y);
+    set_ref();
+    return this;
   }
 
-  public int get_pixel_index(PGraphics pg) {
-  	return this.index_pixel_array((int)x(),(int)y(),pg.width);
+
+  // grid
+  public R_Nuage set_grid(ivec2 grid) {
+    set_grid(grid.x(), grid.y());
+    return this;
   }
 
-  // grid and pixel is
   public R_Nuage set_grid(int x, int y) {
     if(this.grid == null) {
       this.grid = new ivec2(x,y);
@@ -292,8 +288,14 @@ public class R_Nuage extends Rope {
     return this;
   }
 
-  public void use_grid(boolean is) {
+  public R_Nuage use_grid(boolean is) {
     this.use_grid_is = is;
+    return this;
+  }
+
+  // pixel
+  public int get_pixel_index(PGraphics pg) {
+  	return this.index_pixel_array((int)x(),(int)y(),pg.width);
   }
 
   public boolean pixel_is() {
@@ -391,22 +393,26 @@ public class R_Nuage extends Rope {
   }
 
   public void update_grid() {
-    int x = (int)x();
-    int y = (int)y();
-    if(x%this.grid.x() == 0 && y%this.grid.y() == 0) {
-      pixel_is = true;
-    } else {
-      pixel_is = false;
-      pos.set(-1);
+    // print_out("0 x() y()",x(),y());
+    if(this.grid != null && !this.grid.equals(1) && use_grid_is) {
+      int x = (int)x();
+      int y = (int)y();
+      
+      // print_out("1 xy",x,y);
+      if(x%this.grid.x() == 0 && y%this.grid.y() == 0) {
+        // print_out("2 xy",x,y, "index", index, "frameCount",frameCount);
+        pixel_is = true;
+      } else {
+        pixel_is = false;
+        // pos.set(-1);
+      }
     }
   }
 
   public void update() {
     update_focus();  
     update_pattern();
-    if(use_grid_is) {
-      update_grid(); 
-    }
+    update_grid(); 
   }
 
   private float dist_impl() {
