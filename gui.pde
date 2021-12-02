@@ -5,8 +5,10 @@ R_Dropdown algo;
 R_Dropdown step;
 R_Dropdown num;
 R_Dropdown grid;
+R_Dropdown fov;
 
-void dropdown_setup(String... content) {
+void dropdown_setup() {
+	String [] content = {"chaos", "crazy walk", "circle", "spiral", "line"};
 	algo = new R_Dropdown();
 	algo.pos(5,5);
 	algo.set_content(content);
@@ -21,14 +23,21 @@ void dropdown_setup(String... content) {
 	num = new R_Dropdown();
 	num.pos(265,5);
 	num.set_content("10","20","40","80","160","320","640","1240","2480");
-	String num_str = "num" + step.get_content(0);
+	String num_str = "num" + num.get_content(0);
 	num.set_label(num_str);
 	// grid
 	grid = new R_Dropdown();
 	grid.pos(395,5);
 	grid.set_content("1/1","2/2","3/3","4/4","6/6","8/8","2/6","6/2");
-	String grid_str = "grid" + step.get_content(0);
+	String grid_str = "grid" + grid.get_content(0);
 	grid.set_label(grid_str);
+
+	// fov
+	fov = new R_Dropdown();
+	fov.pos(525,5);
+	fov.set_content("360°","270°","240°", "180°","120°","90°","45°");
+	String fov_str = "fov" + fov.get_content(0);
+	fov.set_label(fov_str);
 }
 
 void dropdown_update() {
@@ -51,13 +60,30 @@ void dropdown_update() {
 	grid.show_struc();
 	String grid_str = "grid " + grid.get_value();
 	grid.set_label(grid_str);
+  // fov
+	fov.update();
+	fov.show_struc();
+	String fov_str = "fov " + fov.get_value();
+	fov.set_label(fov_str);
 
 
 }
 
 
 // get
-ivec2 get_grid() {
+vec2 gui_get_fov() {
+	vec2 buf = new vec2(0,TAU);
+	if(fov.get_value().equals("360°")) return buf;
+	if(fov.get_value().equals("270°")) return buf.set(0,TAU*0.75);
+	if(fov.get_value().equals("240°")) return buf.set(0,TAU*0.66);
+	if(fov.get_value().equals("180°")) return buf.set(0,PI);
+	if(fov.get_value().equals("120°")) return buf.set(0,TAU*0.33);
+	if(fov.get_value().equals("90°")) return buf.set(0, PI * 0.5);
+	if(fov.get_value().equals("45°")) return buf.set(0, PI * 0.25);
+	return buf;
+}
+
+ivec2 gui_get_grid() {
 	ivec2 buf = new ivec2(1);
 	if(grid.get_value().equals("1/1")) return buf;
 	if(grid.get_value().equals("2/2")) return buf.set(2);
@@ -70,7 +96,7 @@ ivec2 get_grid() {
 	return buf;
 }
 
-int get_algorithm() {
+int gui_get_algorithm() {
 	if(algo.get_value().equals("crazy walk")) return r.MAD;
 	if(algo.get_value().equals("spiral")) return r.SPIRAL;
 	if(algo.get_value().equals("circle")) return r.CIRCULAR;
@@ -79,14 +105,14 @@ int get_algorithm() {
 	return -1;
 }
 
-float get_step() {
+float gui_get_step() {
 	if(str_is_numeric(step.get_value())) {
 		return Float.parseFloat(step.get_value());
 	}
 	return 1;
 }
 
-int get_num() {
+int gui_get_num() {
 	if(str_is_numeric(num.get_value())) {
 		return Integer.parseInt(num.get_value());
 	}

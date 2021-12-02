@@ -11,15 +11,16 @@ import rope.core.*;
 import rope.vector.vec;
 import rope.vector.vec2;
 import rope.vector.ivec2;
+import rope.vector.bvec2;
 Rope r;
 
 
 void setup() {
 
-	size(600,400,P2D);
+	size(800,400,P2D);
 	r = new Rope();
 	State.init(this);
-	dropdown_setup("chaos", "crazy walk", "circle", "spiral", "line");
+	dropdown_setup();
 
 }
 
@@ -43,17 +44,19 @@ void mouseWheel(MouseEvent e) {
 
 
 void nuage() {
-	int num = get_num();
-	int algo = get_algorithm();
-	float step = get_step();
+	int num = gui_get_num();
+	int algo = gui_get_algorithm();
+	float step = gui_get_step();
 	vec2 pos = new vec2(width/2, height/2);
-	// vec2 angle = new vec2(-PI,PI);
-	// vec2 angle = new vec2(0,PI);
-	vec2 range = new vec2(0,width/4);
+	vec2 range = new vec2(0,height *0.33);
 
 	R_Nuage nuage = new R_Nuage(range,algo);
-	nuage.pos(pos).set_fov(-PI,PI).set_step(step).set_iter(num);
-  nuage.set_grid(get_grid()).use_grid(true);
+  nuage.pos(pos).set_fov(gui_get_fov()).set_step(step).set_iter(num);
+  nuage.set_grid(gui_get_grid()).use_grid(true);
+
+  // float off_ang = map(sin(frameCount * 0.02), -1, 1, -PI, PI);
+  float off_ang = (frameCount * 0.02)%TAU;
+  nuage.offset_angle(off_ang);
 	loadPixels();
 	for(int i = 0 ; i < num ; i++) {
     nuage.set_index(i);
@@ -80,10 +83,12 @@ public class R_Nuage extends Rope {
   private vec2 range_angle;
   private float fov = 0;
   private float bissector = 0;
+  private float offset_angle = 0;
 
   private vec2 range_dist;
-
   private int type = 0;
+  private boolean tictac = false;
+  private boolean tictac_ref = true;
 
   private float step = 1.0f;
   private int iter = 1;
@@ -183,10 +188,20 @@ public class R_Nuage extends Rope {
 
 
   // angle
-	public R_Nuage set_fov(float min, float max) {
-  	this.range_angle.set(min,max);
-    this.fov = calc_fov(min,max);
+  public R_Nuage set_fov(vec2 fov) {
+    this.set_fov(fov.x(), fov.y());
+    return this;
+  }
+
+	public R_Nuage set_fov(float ang_min, float ang_max) {
+  	this.range_angle.set(ang_min, ang_max);
+    this.fov = calc_fov(ang_min, ang_max);
   	return this;
+  }
+
+  public R_Nuage offset_angle(float angle) {
+    this.offset_angle = angle;
+    return this;
   }
 
   public float get_start_fov() {
@@ -337,8 +352,9 @@ public class R_Nuage extends Rope {
   }
 
   private void update_pattern() {
-		float dx = sin(get_focus().get_angle());
-		float dy = cos(get_focus().get_angle());
+    float ang = get_focus().get_angle() + this.offset_angle;
+    float dx = sin(ang);
+		float dy = cos(ang);
     float ratio = ceil(random(this.step));;
     float dist = dist_impl();
 
@@ -357,14 +373,14 @@ public class R_Nuage extends Rope {
       break;
 
       case LINE:
-      float ang = get_bissector();
+      float ang_line = get_bissector() + this.offset_angle;
       if(this.step > 1) {
         float seg_fov = get_fov() / this.step;
         seg_fov *= ratio;
-        ang += seg_fov;
+        ang_line += seg_fov;
       }
-      dx = sin(ang);
-      dy = cos(ang);
+      dx = sin(ang_line);
+      dy = cos(ang_line);
       pos.set(ref_pos.x() + (dx * dist), ref_pos.y() + (dy * dist));
       break;
 
@@ -373,12 +389,36 @@ public class R_Nuage extends Rope {
       float variance = random(this.iter/this.step, this.iter);
       float segment_fov = this.fov / variance;
       segment_fov *= (this.index * this.step);
+        // tictac = (segment_fov%this.fov == 0) ? tictac : !tictac;
+        // if(segment_fov%this.fov == 0) tictac = false; else tictac = true;
+        // if(tictac) {
+            // segment_fov *= -1; // interresting
+          // segment_fov -= fov; // interresting
+          // segment_fov -= (segment_fov%fov); // interresting
+          //   segment_fov = fov - (segment_fov%fov); // very interresting
+        // }
+        
+      int count = floor(segment_fov/this.fov) + 1;
+      // le modulo doit tenir compte du nombre de division du gateau...
+      float div = TAU / fov;
+      // print_out("div", div);
+      if(count%div == 0) tictac = true; else tictac = false;
+
+      if(tictac) {
+        segment_fov = fov - (segment_fov%fov);
+      } else {
+
+      }
+
+      // segment_fov %= this.fov;
+      segment_fov += this.offset_angle;
       dx = sin(segment_fov);
       dy = cos(segment_fov);
       float buf_dist = get_dist_max();
       float segment = buf_dist / variance;
       segment *= this.index;
       segment /= this.step;
+      // when tictac is false it's a mess
       pos.set(ref_pos.x() + (dx * segment), ref_pos.y() + (dy * segment));
       break;
 
@@ -393,18 +433,14 @@ public class R_Nuage extends Rope {
   }
 
   public void update_grid() {
-    // print_out("0 x() y()",x(),y());
     if(this.grid != null && !this.grid.equals(1) && use_grid_is) {
       int x = (int)x();
       int y = (int)y();
       
-      // print_out("1 xy",x,y);
       if(x%this.grid.x() == 0 && y%this.grid.y() == 0) {
-        // print_out("2 xy",x,y, "index", index, "frameCount",frameCount);
         pixel_is = true;
       } else {
         pixel_is = false;
-        // pos.set(-1);
       }
     }
   }
