@@ -8,7 +8,7 @@ R_Dropdown grid;
 R_Dropdown fov;
 
 void dropdown_setup() {
-	String [] content = {"chaos", "crazy walk", "circle", "spiral", "line"};
+	String [] content = {"chaos", "crazy walk", "circle", "spiral", "spiral z", "line"};
 	algo = new R_Dropdown();
 	algo.pos(5,5);
 	algo.set_content(content);
@@ -96,13 +96,15 @@ ivec2 gui_get_grid() {
 	return buf;
 }
 
-int gui_get_algorithm() {
-	if(algo.get_value().equals("crazy walk")) return r.MAD;
-	if(algo.get_value().equals("spiral")) return r.SPIRAL;
-	if(algo.get_value().equals("circle")) return r.CIRCULAR;
-	if(algo.get_value().equals("chaos")) return r.CHAOS;
-	if(algo.get_value().equals("line")) return r.LINE;
-	return -1;
+ivec2 gui_get_algorithm() {
+	ivec2 buf = new ivec2(r.CHAOS, 0);
+	if(algo.get_value().equals("chaos")) return buf;
+	if(algo.get_value().equals("crazy walk")) return buf.set(r.MAD,0);
+	if(algo.get_value().equals("spiral")) return buf.set(r.SPIRAL,0);
+	if(algo.get_value().equals("spiral z")) return buf.set(r.SPIRAL,1);
+	if(algo.get_value().equals("circle")) return buf.set(r.CIRCULAR,0);
+	if(algo.get_value().equals("line")) return buf.set(r.LINE,0);
+	return buf;
 }
 
 float gui_get_step() {

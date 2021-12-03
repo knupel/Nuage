@@ -45,12 +45,17 @@ void mouseWheel(MouseEvent e) {
 
 void nuage() {
 	int num = gui_get_num();
-	int algo = gui_get_algorithm();
+	int algo = gui_get_algorithm().x();
+  int mode =  gui_get_algorithm().y();
 	float step = gui_get_step();
 	vec2 pos = new vec2(width/2, height/2);
 	vec2 range = new vec2(0,height *0.33);
 
-	R_Nuage nuage = new R_Nuage(range,algo);
+	// R_Nuage nuage = new R_Nuage(range,algo);
+  R_Nuage nuage = new R_Nuage();
+  nuage.set_field(range);
+  nuage.set_type(algo).set_mode(mode);
+  r.print_out("type",algo,"mode",mode);
   nuage.pos(pos).set_fov(gui_get_fov()).set_step(step).set_iter(num);
   nuage.set_grid(gui_get_grid()).use_grid(true);
 
@@ -86,9 +91,12 @@ public class R_Nuage extends Rope {
   private float offset_angle = 0;
 
   private vec2 range_dist;
-  private int type = 0;
+
+
+  private int type = CHAOS;
+  private int mode = 0;
+
   private boolean in = false;
-  // private boolean tictac_ref = true;
 
   private float step = 1.0f;
   private int iter = 1;
@@ -99,15 +107,23 @@ public class R_Nuage extends Rope {
   private boolean use_grid_is = false;
 
 
-  public R_Nuage(vec2 range_dist, int type) {
+  public R_Nuage() {
     this.focus = new R_Focus();
   	this.pos = new vec2(0);
     this.range_angle = new vec2(-PI, PI);
     this.fov = calc_fov(this.range_angle.x(),this.range_angle.y());
-    this.range_dist = range_dist.copy();
-		set_ref();
-    set_type(type);
+    this.range_dist = new vec2(0,1);
   }
+
+  // public R_Nuage(vec2 range_dist, int type) {
+  //   this.focus = new R_Focus();
+  // 	this.pos = new vec2(0);
+  //   this.range_angle = new vec2(-PI, PI);
+  //   this.fov = calc_fov(this.range_angle.x(),this.range_angle.y());
+  //   this.range_dist = range_dist.copy();
+	// 	set_ref();
+  //   set_type(type);
+  // }
 
 
   // iteration & index
@@ -135,6 +151,19 @@ public class R_Nuage extends Rope {
   public R_Nuage set_type(int type) {
   	this.type = type;
   	return this;
+  }
+
+  public int get_type() {
+    return this.type;
+  }
+
+  public R_Nuage set_mode(int mode) {
+  	this.mode = mode;
+  	return this;
+  }
+
+  public int get_mode() {
+    return this.mode;
   }
 
   // step
@@ -240,9 +269,18 @@ public class R_Nuage extends Rope {
   }
 
   // range & dist
-  public R_Nuage set_range_dist(float min, float max) {
+  public R_Nuage set_field(vec2 range) {
+    set_range_dist(range.x(), range.y());
+    return this;
+  }
+
+  public R_Nuage set_field(float min, float max) {
+    set_range_dist(min, max);
+    return this;
+  }
+
+  private void set_range_dist(float min, float max) {
   	this.range_dist.set(min,max);
-  	return this;
   }
 
   public float get_dist() {
@@ -389,27 +427,22 @@ public class R_Nuage extends Rope {
       float variance = random(this.iter/this.step, this.iter);
       float segment_fov = this.fov / variance;
       segment_fov *= (this.index * this.step);
-        // in = (segment_fov%this.fov == 0) ? in : !in;
-        // if(segment_fov%this.fov == 0) in = false; else in = true;
-        // if(in) {
-            // segment_fov *= -1; // interresting
-          // segment_fov -= fov; // interresting
-          // segment_fov -= (segment_fov%fov); // interresting
-          //   segment_fov = fov - (segment_fov%fov); // very interresting
-        // }
-        
-      int count = floor(segment_fov/this.fov);
-      float div = TAU / this.fov + 0.001;
-      float mod = count%div;
-      if(mod == 0) in = true; else in = false;
-      if(!in) {
-        if(count%2 != 0) {
-          segment_fov = this.fov - (segment_fov%this.fov);
-        } else {
-          segment_fov = segment_fov%this.fov;
-        }
-      }
+      
+      switch(this.mode) {
+        case 0: 
+        segment_fov = spiral_regular(segment_fov);
+        break;
 
+        case 1: 
+        segment_fov = spiral_z(segment_fov);
+        break;
+
+        default:
+        segment_fov = spiral_regular(segment_fov);
+        break;
+      }
+      
+      
       segment_fov += this.offset_angle;
       dx = sin(segment_fov);
       dy = cos(segment_fov);
@@ -429,6 +462,36 @@ public class R_Nuage extends Rope {
       pos.set(ref_pos.x() + (dx * dist), ref_pos.y() + (dy * dist));
       break;
   	}
+  }
+
+  private float spiral_z(float segment_fov) {
+    int count = floor(segment_fov/this.fov);
+    float div = TAU / this.fov + 0.001;
+    float mod = count%div;
+    if(mod == 0) {
+      in = true; 
+    } else in = false;
+    if(!in) {
+      if(count%2 != 0) {
+        segment_fov = this.fov - (segment_fov%this.fov);
+      } else {
+        segment_fov = segment_fov%this.fov;
+      }
+    }
+    return segment_fov;
+  }
+
+  private float spiral_regular(float segment_fov) {
+    int count = floor(segment_fov/this.fov);
+    float div = TAU / this.fov;
+    float mod = count%div;
+    if(mod == 0) {
+      in = true; 
+    } else in = false;
+    if(!in) {
+      segment_fov = segment_fov%this.fov;
+    }
+    return segment_fov;
   }
 
   public void update_grid() {
