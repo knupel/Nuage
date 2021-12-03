@@ -87,8 +87,8 @@ public class R_Nuage extends Rope {
 
   private vec2 range_dist;
   private int type = 0;
-  private boolean tictac = false;
-  private boolean tictac_ref = true;
+  private boolean in = false;
+  // private boolean tictac_ref = true;
 
   private float step = 1.0f;
   private int iter = 1;
@@ -389,28 +389,27 @@ public class R_Nuage extends Rope {
       float variance = random(this.iter/this.step, this.iter);
       float segment_fov = this.fov / variance;
       segment_fov *= (this.index * this.step);
-        // tictac = (segment_fov%this.fov == 0) ? tictac : !tictac;
-        // if(segment_fov%this.fov == 0) tictac = false; else tictac = true;
-        // if(tictac) {
+        // in = (segment_fov%this.fov == 0) ? in : !in;
+        // if(segment_fov%this.fov == 0) in = false; else in = true;
+        // if(in) {
             // segment_fov *= -1; // interresting
           // segment_fov -= fov; // interresting
           // segment_fov -= (segment_fov%fov); // interresting
           //   segment_fov = fov - (segment_fov%fov); // very interresting
         // }
         
-      int count = floor(segment_fov/this.fov) + 1;
-      // le modulo doit tenir compte du nombre de division du gateau...
-      float div = TAU / fov;
-      // print_out("div", div);
-      if(count%div == 0) tictac = true; else tictac = false;
-
-      if(tictac) {
-        segment_fov = fov - (segment_fov%fov);
-      } else {
-
+      int count = floor(segment_fov/this.fov);
+      float div = TAU / this.fov + 0.001;
+      float mod = count%div;
+      if(mod == 0) in = true; else in = false;
+      if(!in) {
+        if(count%2 != 0) {
+          segment_fov = this.fov - (segment_fov%this.fov);
+        } else {
+          segment_fov = segment_fov%this.fov;
+        }
       }
 
-      // segment_fov %= this.fov;
       segment_fov += this.offset_angle;
       dx = sin(segment_fov);
       dy = cos(segment_fov);

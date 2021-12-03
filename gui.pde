@@ -74,10 +74,10 @@ void dropdown_update() {
 vec2 gui_get_fov() {
 	vec2 buf = new vec2(0,TAU);
 	if(fov.get_value().equals("360°")) return buf;
-	if(fov.get_value().equals("270°")) return buf.set(0,TAU*0.75);
-	if(fov.get_value().equals("240°")) return buf.set(0,TAU*0.66);
+	if(fov.get_value().equals("270°")) return buf.set(0,TAU * 0.75);
+	if(fov.get_value().equals("240°")) return buf.set(0,TAU * 0.66);
 	if(fov.get_value().equals("180°")) return buf.set(0,PI);
-	if(fov.get_value().equals("120°")) return buf.set(0,TAU*0.33);
+	if(fov.get_value().equals("120°")) return buf.set(0,TAU * 0.3333334);
 	if(fov.get_value().equals("90°")) return buf.set(0, PI * 0.5);
 	if(fov.get_value().equals("45°")) return buf.set(0, PI * 0.25);
 	return buf;
