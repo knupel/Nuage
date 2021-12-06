@@ -10,6 +10,7 @@ import rope.vector.vec;
 import rope.vector.vec2;
 import rope.vector.ivec2;
 import rope.vector.bvec2;
+import rope.costume.R_Line2D;
 
 
 public class R_Nuage extends Rope {
@@ -39,8 +40,11 @@ public class R_Nuage extends Rope {
   private boolean pixel_is = true;
   private boolean use_grid_is = false;
 
+  private PApplet pa;
 
-  public R_Nuage() {
+
+  public R_Nuage(PApplet pa) {
+    this.pa = pa;
     this.focus = new R_Focus();
   	this.pos = new vec2(0);
     this.range_angle = new vec2(-PI, PI);
@@ -289,6 +293,10 @@ public class R_Nuage extends Rope {
       dist = get_dist_max();
       break;
 
+      case POLYGON:
+      dist = get_dist_max();
+      break;
+
 			case MAD:
       dist = random(get_dist_min(), get_dist_max());
       break;
@@ -318,6 +326,7 @@ public class R_Nuage extends Rope {
 		float dy = cos(ang);
     float ratio = ceil(random(this.step));;
     float dist = dist_impl();
+    float seg_dist = get_dist() / this.step;
 
   	switch(this.type) {
   		case MAD:
@@ -328,9 +337,33 @@ public class R_Nuage extends Rope {
       break;
 
       case CIRCULAR:
-      float seg_dist = get_dist() / this.step;
       dist = seg_dist * ratio;
       pos.set(ref_pos.x() + (dx * dist), ref_pos.y() + (dy * dist));
+      break;
+
+      case POLYGON:
+      // we add 3, because the fist polygon is a triangle from the begining to the end of human geometry HiStory... may be
+      int summits = this.mode + 3;
+      float [] summits_ang = new float[summits];
+      float seg_ang = TAU / summits;
+      for(int i = 0 ; i < summits_ang.length ; i++) {
+        summits_ang[i] = seg_ang * i + this.offset_angle;
+      }
+      // where point must be project
+      dist = seg_dist * ratio;
+      int len = summits_ang.length;
+      float ang_stop = 0;
+      for(int i = 0; i < len ; i++) {
+        float ang_start = summits_ang[i];
+        int i2 = i + 1;
+        if(i2 != len) ang_stop = summits_ang[i2];
+        else ang_stop = TAU + this.offset_angle;
+        if(ang >= ang_start && ang < ang_stop) {
+          polygon_point(dx, dy, dist, ang_start, ang_stop);
+          bingo = true;
+          break;
+        }
+      }
       break;
 
       case LINE:
@@ -383,6 +416,33 @@ public class R_Nuage extends Rope {
       pos.set(ref_pos.x() + (dx * dist), ref_pos.y() + (dy * dist));
       break;
   	}
+  }
+
+
+  // algo
+  private void polygon_point(float dx, float dy, float dist, float ang_start, float ang_stop) {
+    // point on the circle
+    vec2 a = new vec2(dx * dist, dy * dist);
+    vec2 b = new vec2(0);
+    R_Line2D l0 = new R_Line2D(pa,a,b);
+    // first summit of polygon
+    dx = sin(ang_start);
+    dy = cos(ang_start);
+    a.set(dx * dist, dy * dist);
+    // second summit of polygon
+    dx = sin(ang_stop);
+    dy = cos(ang_stop);
+    b.set(dx * dist, dy * dist);
+
+    R_Line2D l1 = new R_Line2D(pa,a,b);
+    if(l0 != null && l1 != null) {
+      vec2 intersection = l0.intersection(l1);
+      if(intersection != null) {
+        pos.set(intersection);
+      }
+    }
+    vec2 intersection = new vec2(l0.intersection(l1));
+    pos.set(intersection.add(ref_pos));
   }
 
   private float spiral_z(float segment_fov) {
