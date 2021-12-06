@@ -47,7 +47,7 @@ void nuage() {
 	vec2 pos = new vec2(width/2, height/2);
 	vec2 range = new vec2(0,height *0.33);
 
-  R_Nuage nuage = new R_Nuage(this);
+  R_Nubo nuage = new R_Nubo(this);
   nuage.set_field(range);
   nuage.set_type(algo).set_mode(mode);
   r.print_out("type",algo,"mode",mode);

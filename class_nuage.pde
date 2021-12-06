@@ -1,9 +1,9 @@
 /**
-* R_Nuage
+* R_Nubo
 * v 0.1.3
 * 2021-2021
 *
-* R_Nuage is a collection of 2D algorithms to distribute point from center with an opening angle.
+* R_Nubo is a collection of 2D algorithms to distribute point from center with an opening angle.
 *
 */
 import rope.vector.vec;
@@ -13,7 +13,7 @@ import rope.vector.bvec2;
 import rope.costume.R_Line2D;
 
 
-public class R_Nuage extends Rope {
+public class R_Nubo extends Rope {
 	private vec2 ref_pos;
 	private vec2 pos;
 
@@ -43,7 +43,7 @@ public class R_Nuage extends Rope {
   private PApplet pa;
 
 
-  public R_Nuage(PApplet pa) {
+  public R_Nubo(PApplet pa) {
     this.pa = pa;
     this.focus = new R_Focus();
   	this.pos = new vec2(0);
@@ -54,12 +54,12 @@ public class R_Nuage extends Rope {
   }
 
   // iteration & index
-  public R_Nuage set_iter(int iter) {
+  public R_Nubo set_iter(int iter) {
   	this.iter = iter;
     return this;
   }
 
-  public R_Nuage set_index(int index) {
+  public R_Nubo set_index(int index) {
   	this.index = index;
     return this;
   }
@@ -75,7 +75,7 @@ public class R_Nuage extends Rope {
   }
 
   // type
-  public R_Nuage set_type(int type) {
+  public R_Nubo set_type(int type) {
   	this.type = type;
   	return this;
   }
@@ -84,7 +84,7 @@ public class R_Nuage extends Rope {
     return this.type;
   }
 
-  public R_Nuage set_mode(int mode) {
+  public R_Nubo set_mode(int mode) {
   	this.mode = mode;
   	return this;
   }
@@ -94,7 +94,7 @@ public class R_Nuage extends Rope {
   }
 
   // step
-  public R_Nuage set_step(float step) {
+  public R_Nubo set_step(float step) {
   	this.step = step;
   	return this;
   }
@@ -108,13 +108,13 @@ public class R_Nuage extends Rope {
     return this.focus;
   }
 
-  public R_Nuage set_focus(float angle, float dist) {
+  public R_Nubo set_focus(float angle, float dist) {
     set_focus_angle(angle);
     set_focus_dist(dist);
     return this;
   }
 
-  public R_Nuage set_focus_angle(float angle) {
+  public R_Nubo set_focus_angle(float angle) {
      boolean is = false;
     if(angle >= get_start_fov() && angle <= get_stop_fov()) {
       is = true;
@@ -123,12 +123,12 @@ public class R_Nuage extends Rope {
       this.focus.set_angle(angle);
       return this;
     }
-    print_err("public R_Nuage set_focus_angle(float angle)", angle, "is out of the range fov", get_start_fov(), get_stop_fov());
+    print_err("public R_Nubo set_focus_angle(float angle)", angle, "is out of the range fov", get_start_fov(), get_stop_fov());
     exit();
     return this;
   }
 
-  public R_Nuage set_focus_dist(float dist) {
+  public R_Nubo set_focus_dist(float dist) {
      boolean is = false;
     if(dist >= get_dist_min() && dist <= get_dist_max()) {
       is = true;
@@ -137,25 +137,25 @@ public class R_Nuage extends Rope {
       this.focus.set_dist(dist);
       return this;
     }
-    print_err("public R_Nuage set_focus_dist(float dist)", dist, "is out of the range fov", get_dist_min(), get_dist_max());
+    print_err("public R_Nubo set_focus_dist(float dist)", dist, "is out of the range fov", get_dist_min(), get_dist_max());
     exit();
     return this;
   }
 
 
   // angle
-  public R_Nuage set_fov(vec2 fov) {
+  public R_Nubo set_fov(vec2 fov) {
     this.set_fov(fov.x(), fov.y());
     return this;
   }
 
-	public R_Nuage set_fov(float ang_min, float ang_max) {
+	public R_Nubo set_fov(float ang_min, float ang_max) {
   	this.range_angle.set(ang_min, ang_max);
     this.fov = calc_fov(ang_min, ang_max);
   	return this;
   }
 
-  public R_Nuage offset_angle(float angle) {
+  public R_Nubo offset_angle(float angle) {
     this.offset_angle = angle;
     return this;
   }
@@ -196,12 +196,12 @@ public class R_Nuage extends Rope {
   }
 
   // range & dist
-  public R_Nuage set_field(vec2 range) {
+  public R_Nubo set_field(vec2 range) {
     set_range_dist(range.x(), range.y());
     return this;
   }
 
-  public R_Nuage set_field(float min, float max) {
+  public R_Nubo set_field(float min, float max) {
     set_range_dist(min, max);
     return this;
   }
@@ -241,12 +241,12 @@ public class R_Nuage extends Rope {
   }
 
   // set pos
-  public R_Nuage pos(vec pos) {
+  public R_Nubo pos(vec pos) {
   	this.pos(pos.x(),pos.y());
   	return this;
   }
 
-	public R_Nuage pos(float x, float y) {
+	public R_Nubo pos(float x, float y) {
   	this.pos.set(x,y);
     set_ref();
     return this;
@@ -254,12 +254,12 @@ public class R_Nuage extends Rope {
 
 
   // grid
-  public R_Nuage set_grid(ivec2 grid) {
+  public R_Nubo set_grid(ivec2 grid) {
     set_grid(grid.x(), grid.y());
     return this;
   }
 
-  public R_Nuage set_grid(int x, int y) {
+  public R_Nubo set_grid(int x, int y) {
     if(this.grid == null) {
       this.grid = new ivec2(x,y);
     } else {
@@ -268,7 +268,7 @@ public class R_Nuage extends Rope {
     return this;
   }
 
-  public R_Nuage use_grid(boolean is) {
+  public R_Nubo use_grid(boolean is) {
     this.use_grid_is = is;
     return this;
   }
@@ -360,7 +360,6 @@ public class R_Nuage extends Rope {
         else ang_stop = TAU + this.offset_angle;
         if(ang >= ang_start && ang < ang_stop) {
           polygon_point(dx, dy, dist, ang_start, ang_stop);
-          bingo = true;
           break;
         }
       }
