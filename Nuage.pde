@@ -9,15 +9,23 @@
 import rope.R_State.State;
 import rope.core.*;
 
+/**
+ * this sketch is used to work easily to class R_Nubo for Rope library
+ * you can diable the tab class_nuage.pde and use directly by using the import from library
+*/
+import rope.pixo.R_Nubo;
+
 Rope r;
+R_Nubo nuage;
 
 
 void setup() {
-
 	size(800,400,P2D);
 	r = new Rope();
 	State.init(this);
 	dropdown_setup();
+	nuage = new R_Nubo(this);
+	nuage.info();
 
 }
 
@@ -47,20 +55,20 @@ void nuage() {
 	vec2 pos = new vec2(width/2, height/2);
 	vec2 range = new vec2(0,height *0.33);
 
-  R_Nubo nuage = new R_Nubo(this);
   nuage.set_field(range);
-  nuage.set_type(algo).set_mode(mode);
-  r.print_out("type",algo,"mode",mode);
+  nuage.set_algo(algo).set_mode(mode);
+  // r.print_out("type",algo,"mode",mode);
   nuage.pos(pos).set_fov(gui_get_fov()).set_step(step).set_iter(num);
   nuage.set_grid(gui_get_grid()).use_grid(true);
 
-  // float off_ang = map(sin(frameCount * 0.02), -1, 1, -PI, PI);
   float off_ang = (frameCount * 0.02)%TAU;
   nuage.offset_angle(off_ang);
 	loadPixels();
+	float off_x = map(mouseX,0,width, -width/2,width/2);
+	float off_y = map(mouseY,0,height, -height/2,height/2);
+	nuage.offset_pos(off_x,off_y);
 	for(int i = 0 ; i < num ; i++) {
-    nuage.set_index(i);
-		nuage.update();
+		nuage.update(i);
     if(nuage.pixel_is()) {
       set((int)nuage.x(),(int)nuage.y(),r.BLANC);
     }
