@@ -8,6 +8,9 @@ application.windows32
 application.windows64
 application.macosx
 
+# sublim text
+build-tmp
+
 # vscode
 out
 
