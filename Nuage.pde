@@ -23,7 +23,7 @@ void setup() {
 	size(800,400,P2D);
 	r = new Rope();
 	State.init(this);
-	dropdown_setup();
+	gui_setup();
 	nuage = new R_Nubo(this);
 	nuage.info();
 
@@ -33,11 +33,12 @@ void draw() {
 	State.pointer(mouseX,mouseY);
   State.event(mousePressed);
 	
-	dropdown_update();
-	if(mousePressed) {
+	if(!keyPressed) {
 		background(0);
 		nuage();
 	}
+	gui_update_and_show();
+
 	
 	State.reset_event();
 }
@@ -64,8 +65,9 @@ void nuage() {
   float off_ang = (frameCount * 0.02)%TAU;
   nuage.offset_angle(off_ang);
 	loadPixels();
-	float off_x = map(mouseX,0,width, -width/2,width/2);
-	float off_y = map(mouseY,0,height, -height/2,height/2);
+	int ratio = 5;
+	float off_x = map(mouseX,0,width, -width/ratio,width/ratio);
+	float off_y = map(mouseY,0,height, -height/ratio,height/ratio);
 	nuage.offset_pos(off_x,off_y);
 	for(int i = 0 ; i < num ; i++) {
 		nuage.update(i);

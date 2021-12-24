@@ -1,5 +1,6 @@
 
 import rope.gui.R_Dropdown;
+import rope.gui.button.R_Knob;
 import rope.vector.vec2;
 import rope.vector.ivec2;
 
@@ -8,9 +9,10 @@ R_Dropdown mode;
 R_Dropdown step;
 R_Dropdown num;
 R_Dropdown grid;
-R_Dropdown fov;
+R_Knob fov;
+// R_Dropdown fov;
 
-void dropdown_setup() {
+void gui_setup() {
 	int step_db = 130;
 	int pos_x = 5;
 	// algo / type
@@ -44,14 +46,26 @@ void dropdown_setup() {
 	String grid_str = "grid" + grid.get_content(0);
 	grid.set_label(grid_str);
 	// fov
-	fov = new R_Dropdown();
+	fov = new R_Knob();
 	fov.pos(pos_x += step_db,5);
-	fov.set_content("360°","270°","240°", "180°","120°","90°","45°");
-	String fov_str = "fov" + fov.get_content(0);
+	fov.size(80);
+	String fov_str = "fov" + fov.get(0) + " <> " + fov.get(1);
 	fov.set_label(fov_str);
+	
+	fov.set_value(0,1);
+	fov.set_size_mol(10);
+	fov.set_dist_mol(fov.size().x() * 0.5);
+	fov.set_type_mol(RECT);
+	fov.set_dist_guide(fov.size().x() * 0.65);
+
+	// fov = new R_Dropdown();
+	// fov.pos(pos_x += step_db,5);
+	// fov.set_content("360°","270°","240°", "180°","120°","90°","45°");
+	// String fov_str = "fov" + fov.get_content(0);
+	// fov.set_label(fov_str);
 }
 
-void dropdown_update() {
+void gui_update_and_show() {
 	algo.update();
 	algo.show_struc();
 	String algo_str = algo.get_value();
@@ -79,8 +93,12 @@ void dropdown_update() {
   // fov
 	fov.update();
 	fov.show_struc();
-	String fov_str = "fov " + fov.get_value();
+	fov.show_struc_pie();
+	String fov_str = "fov" + fov.get(0) + " <> " + fov.get(1);
 	fov.set_label(fov_str);
+	fov.show_mol();
+	fov.show_guide();
+	fov.show_label();
 
 
 }
@@ -89,13 +107,15 @@ void dropdown_update() {
 // get
 vec2 gui_get_fov() {
 	vec2 buf = new vec2(0,TAU);
-	if(fov.get_value().equals("360°")) return buf;
-	if(fov.get_value().equals("270°")) return buf.set(0,TAU * 0.75);
-	if(fov.get_value().equals("240°")) return buf.set(0,TAU * 0.66);
-	if(fov.get_value().equals("180°")) return buf.set(0,PI);
-	if(fov.get_value().equals("120°")) return buf.set(0,TAU * 0.3333334);
-	if(fov.get_value().equals("90°")) return buf.set(0, PI * 0.5);
-	if(fov.get_value().equals("45°")) return buf.set(0, PI * 0.25);
+	buf.set(fov.get(0),fov.get(1));
+
+	// if(fov.get_value().equals("360°")) return buf;
+	// if(fov.get_value().equals("270°")) return buf.set(0,TAU * 0.75);
+	// if(fov.get_value().equals("240°")) return buf.set(0,TAU * 0.66);
+	// if(fov.get_value().equals("180°")) return buf.set(0,PI);
+	// if(fov.get_value().equals("120°")) return buf.set(0,TAU * 0.3333334);
+	// if(fov.get_value().equals("90°")) return buf.set(0, PI * 0.5);
+	// if(fov.get_value().equals("45°")) return buf.set(0, PI * 0.25);
 	return buf;
 }
 
