@@ -10,7 +10,6 @@ R_Dropdown step;
 R_Dropdown num;
 R_Dropdown grid;
 R_Knob fov;
-// R_Dropdown fov;
 
 void gui_setup() {
 	int step_db = 130;
@@ -31,13 +30,15 @@ void gui_setup() {
 	step = new R_Dropdown();
 	step.pos(pos_x += step_db,5);
 	step.set_content("1","2","3","4","5","10","15","20","30","40","50","100");
-	String step_str = "step" + step.get_content(0);
+	step.select_value(3);
+	String step_str = "step" + step.get_content(3);
 	step.set_label(step_str);
 	// num
 	num = new R_Dropdown();
 	num.pos(pos_x += step_db,5);
-	num.set_content("10","20","40","80","160","320","640","1240","2480");
-	String num_str = "num" + num.get_content(0);
+	num.set_content("10","20","40","80","160","320","640","1200","2400","4800");
+	num.select_value(5);
+	String num_str = "num" + num.get_content(5);
 	num.set_label(num_str);
 	// grid
 	grid = new R_Dropdown();
@@ -51,18 +52,13 @@ void gui_setup() {
 	fov.size(80);
 	String fov_str = "fov" + fov.get(0) + " <> " + fov.get(1);
 	fov.set_label(fov_str);
-	
+
 	fov.set_value(0,1);
 	fov.set_size_mol(10);
 	fov.set_dist_mol(fov.size().x() * 0.5);
 	fov.set_type_mol(RECT);
 	fov.set_dist_guide(fov.size().x() * 0.65);
 
-	// fov = new R_Dropdown();
-	// fov.pos(pos_x += step_db,5);
-	// fov.set_content("360°","270°","240°", "180°","120°","90°","45°");
-	// String fov_str = "fov" + fov.get_content(0);
-	// fov.set_label(fov_str);
 }
 
 void gui_update_and_show() {
@@ -107,15 +103,9 @@ void gui_update_and_show() {
 // get
 vec2 gui_get_fov() {
 	vec2 buf = new vec2(0,TAU);
-	buf.set(fov.get(0),fov.get(1));
-
-	// if(fov.get_value().equals("360°")) return buf;
-	// if(fov.get_value().equals("270°")) return buf.set(0,TAU * 0.75);
-	// if(fov.get_value().equals("240°")) return buf.set(0,TAU * 0.66);
-	// if(fov.get_value().equals("180°")) return buf.set(0,PI);
-	// if(fov.get_value().equals("120°")) return buf.set(0,TAU * 0.3333334);
-	// if(fov.get_value().equals("90°")) return buf.set(0, PI * 0.5);
-	// if(fov.get_value().equals("45°")) return buf.set(0, PI * 0.25);
+	if(fov != null) {
+		buf.set(fov.get_start(),fov.get_stop());
+	}
 	return buf;
 }
 
