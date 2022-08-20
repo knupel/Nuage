@@ -15,7 +15,6 @@ import rope.core.*;
 */
 import rope.pixo.R_Nubo;
 
-Rope r;
 R_Nubo nuage;
 
 
