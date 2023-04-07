@@ -7,20 +7,21 @@
  * 
  * */
 import rope.utils.R_State.State;
-import rope.core.*;
+import rope.core.Rope;
 
 /**
  * this sketch is used to work easily to class R_Nubo for Rope library
  * you can diable the tab class_nuage.pde and use directly by using the import from library
 */
 import rope.pixo.R_Nubo;
+Rope r = new Rope();
 
 R_Nubo nuage;
 
 
 void setup() {
 	size(800,400,P2D);
-	r = new Rope();
+	
 	State.init(this);
 	gui_setup();
 	nuage = new R_Nubo(this);
