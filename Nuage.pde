@@ -1,12 +1,12 @@
 /**
  * NUAGE 
- * v 0.1.0
- * 2021-2021
+ * v 0.1.1
+ * 2021-2023
  * 
  * Algorithm exploration to create a cloud pixel around a root point
  * 
  * */
-import rope.R_State.State;
+import rope.utils.R_State.State;
 import rope.core.*;
 
 /**
@@ -76,13 +76,3 @@ void nuage() {
 	}
 	updatePixels();
 }
-
-
-
-
-
-
-
-
-
-
