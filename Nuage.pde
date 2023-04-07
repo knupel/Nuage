@@ -1,18 +1,16 @@
 /**
- * NUAGE 
- * v 0.1.1
+ * NUAGE is Nubo in Esperanto
+ * v 0.2.1
  * 2021-2023
  * 
  * Algorithm exploration to create a cloud pixel around a root point
  * 
- * */
+ * this sketch is used to work easily to class R_Nubo for Rope library
+*/
+
+
 import rope.utils.R_State.State;
 import rope.core.Rope;
-
-/**
- * this sketch is used to work easily to class R_Nubo for Rope library
- * you can diable the tab class_nuage.pde and use directly by using the import from library
-*/
 import rope.pixo.R_Nubo;
 Rope r = new Rope();
 
@@ -26,7 +24,6 @@ void setup() {
 	gui_setup();
 	nuage = new R_Nubo(this);
 	nuage.info();
-
 }
 
 void draw() {
@@ -38,8 +35,6 @@ void draw() {
 		nuage();
 	}
 	gui_update_and_show();
-
-	
 	State.reset_event();
 }
 
@@ -69,10 +64,10 @@ void nuage() {
 	float off_x = map(mouseX,0,width, -width/ratio,width/ratio);
 	float off_y = map(mouseY,0,height, -height/ratio,height/ratio);
 	nuage.offset_pos(off_x,off_y);
-	for(int i = 0 ; i < num ; i++) {
+	for(int i = 0 ; i < nuage.get_iter() ; i++) {
 		nuage.update(i);
     if(nuage.pixel_is()) {
-      set((int)nuage.x(),(int)nuage.y(),r.BLANC);
+      set(round(nuage.x()),round(nuage.y()),r.BLANC);
     }
 	}
 	updatePixels();
